@@ -118,8 +118,8 @@ public class TestRest {
 		
 		@Path("push/goods/one")
 		@POST
-		@Produces(MediaType.APPLICATION_JSON)
-		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+		@Consumes(MediaType.APPLICATION_JSON + ";charset=UTF-8")
 		public ResponseEntity pushGoods(String jsonstr){
 			JSONObject j =JSONObject.parseObject(jsonstr);
 			GoodsEntity goods = JSONObject.parseObject(j.getString("goods"),GoodsEntity.class);
@@ -128,11 +128,16 @@ public class TestRest {
 			System.out.println("name="+goods.getName());
 			System.out.println("area="+goods.getArea());
 			ResponseEntity rs = new ResponseEntity();
-			rs.setCode(0);
-			rs.setMessage("推送成功");
+			
+			
+			//将接收到的商品数据,写入服务端的数据表
+			GoodsService service = (GoodsService) Factory.getInstance().getObject("goods.service.impl");
+			
+			int count = service.add(goods);
+			
+			rs.setCode(count>0 ? 0:1099);
+			rs.setMessage(count>0 ? "LYJ推送成功":"推送失败：写入商品数据失败");
 			rs.setData(null);
-			
-			
 			return rs;
 			
 		}
